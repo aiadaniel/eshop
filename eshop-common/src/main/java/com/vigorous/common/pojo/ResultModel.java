@@ -1,38 +1,68 @@
 package com.vigorous.common.pojo;
 
+import java.io.IOException;
+import java.util.List;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class ResultModel {
+	public static final String OK = "OK";
 	private int status;
-	
-	private String message;
-	
-	private Object content;
-	
+
+	private String msg;
+
+	private Object data;
+
 	public int getStatus() {
-        return status;
-    }
+		return status;
+	}
 
-    public String getMessage() {
-        return message;
-    }
+	public String getMsg() {
+		return msg;
+	}
 
-    public Object getContent() {
-        return content;
-    }
+	public Object getData() {
+		return data;
+	}
 
-    public ResultModel(int code, String message) {
-        this.status = code;
-        this.message = message;
-        this.content = "";
-    }
+	public ResultModel(int code, String message) {
+		this.status = code;
+		this.msg = message;
+		this.data = "";
+	}
 
-    public ResultModel(int code, String message, Object content) {
-        this.status = code;
-        this.message = message;
-        this.content = content;
-    }
-    
-    public static ResultModel ok() {
-		return new ResultModel(200, "OK");
+	public ResultModel(int code, String message, Object content) {
+		this.status = code;
+		this.msg = message;
+		this.data = content;
+	}
+
+	public static ResultModel ok() {
+		return new ResultModel(200, OK);
+	}
+
+	public static ResultModel ok(Object data) {
+		return new ResultModel(200, OK, data);
+	}
+
+	private static final ObjectMapper MAPPER = new ObjectMapper();
+
+	public static ResultModel formatToList(String jsonData, Class<?> clazz) {
+		try {
+			JsonNode jsonNode = MAPPER.readTree(jsonData);
+			JsonNode data = jsonNode.get("data");
+			Object obj = null;
+			if (data.isArray() && data.size() > 0) {
+				obj = MAPPER.readValue(data.traverse(),
+						MAPPER.getTypeFactory().constructCollectionType(List.class, clazz));
+			}
+			return new ResultModel(jsonNode.get("status").intValue(), jsonNode.get("msg").asText(),obj);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 }
