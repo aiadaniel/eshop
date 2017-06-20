@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:cache="http://www.springframework.org/schema/cache" xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+        http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!--配置mybatis全局配置文件:mybatis-config.xml -->
+		<property name="configLocation" value="classpath:mybatis/mybatis-config.xml" />
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- dao注入spring -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 接口扫描包 -->
+		<property name="basePackage" value="com.vigorous.mapper,com.vigorous.search.mapper" />
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+	</bean>
+
+	<!-- 还可以使用 <context:exclude-filter这个方式，过滤掉需要留给mvc配置去加载的包 -->
+	<context:component-scan base-package="com.vigorous.search.service" />
+
+	<!-- 使用注解式声明事务支持需要 -->
+	<!-- <tx:annotation-driven transaction-manager="txManager"></tx:annotation-driven> -->
+
+	<bean id="txManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- 事务通知 -->
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="get*" read-only="false" propagation="SUPPORTS" />
+			<tx:method name="find*" read-only="false" propagation="SUPPORTS" />
+			<tx:method name="create*" read-only="false" />
+			<tx:method name="save*" read-only="false" propagation="REQUIRED" />
+			<tx:method name="update*" />
+			<tx:method name="delete*" />
+			<!--<tx:method name="*"/> -->
+		</tx:attributes>
+	</tx:advice>
+
+	<!-- <aop:aspectj-autoproxy proxy-target-class="true" /> -->
+	<aop:config>
+		<!-- 定义切面，这是aspectJ的切点表达式语言 -->
+		<aop:pointcut id="bussinessService" expression="execution(* com.vigorous.search.service.*.*(..))" />
+		<!-- 通知（何时）：引用切点，引用通知 -->
+		<aop:advisor pointcut-ref="bussinessService" advice-ref="txAdvice" />
+	</aop:config>
+
+	<!-- 当前引入这种方式导致placeholder占位符失效，需要查下为啥 -->
+	<!-- <import resource="redis-context.xml" /> -->
+
+	<!-- 要使用spring cache注解必须加这个在主配置文件 -->
+<!-- 	<cache:annotation-driven />
+
+	<bean id="cacheManager" class="org.springframework.data.redis.cache.RedisCacheManager"
+		c:redis-operations-ref="redisTemplate">
+		<property name="defaultExpiration" value="600"></property>
+	</bean> -->
+	
+	<!-- 配置SolrServer对象 -->
+	<!-- 单机版 -->
+	<bean id="httpSolrServer" class="org.apache.solr.client.solrj.impl.HttpSolrServer">
+		<constructor-arg name="baseURL" value="${SOLR.SERVER.URL}"></constructor-arg>
+	</bean>
+
+
+	<!-- 开发环境 -->
+	<beans profile="dev">
+		<context:property-placeholder location="classpath:property/*-dev.properties" />
+
+		<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+			destroy-method="close">
+			<property name="driverClassName" value="${jdbc.driver}" />
+			<property name="url" value="${jdbc.url}" />
+			<property name="username" value="${jdbc.username}" />
+			<property name="password" value="${jdbc.password}" />
+			<property name="maxActive" value="10" />
+			<property name="minIdle" value="5" />
+		</bean>
+	</beans>
+
+	<!-- 测试环境 -->
+	<beans profile="qa">
+		<context:property-placeholder location="classpath*:property/*-qa.properties" />
+		<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+			destroy-method="close">
+			<property name="driverClassName" value="${jdbc.driver}" />
+			<property name="url" value="${jdbc.url}" />
+			<property name="username" value="${jdbc.user}" />
+			<property name="password" value="${jdbc.password}" />
+		</bean>
+	</beans>
+
+	<!-- 生产环境 -->
+	<beans profile="prod">
+		<context:property-placeholder location="classpath:property/*-prod.properties" />
+		<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+			destroy-method="close">
+			<property name="driverClassName" value="${jdbc.driver}" />
+			<property name="url" value="${jdbc.url}" />
+			<property name="username" value="${jdbc.username}" />
+			<property name="password" value="${jdbc.password}" />
+		</bean>
+	</beans>
+
+</beans>
