@@ -64,5 +64,26 @@ public class ResultModel {
 			return null;
 		}
 	}
+	
+    public static ResultModel formatToPojo(String jsonData, Class<?> clazz) {
+        try {
+            if (clazz == null) {
+                return MAPPER.readValue(jsonData, ResultModel.class);
+            }
+            JsonNode jsonNode = MAPPER.readTree(jsonData);
+            JsonNode data = jsonNode.get("data");
+            Object obj = null;
+            if (clazz != null) {
+                if (data.isObject()) {
+                    obj = MAPPER.readValue(data.traverse(), clazz);
+                } else if (data.isTextual()) {
+                    obj = MAPPER.readValue(data.asText(), clazz);
+                }
+            }
+            return new ResultModel(jsonNode.get("status").intValue(), jsonNode.get("msg").asText(), obj);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
 }

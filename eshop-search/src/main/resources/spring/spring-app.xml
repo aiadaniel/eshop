@@ -28,6 +28,7 @@
 
 	<!-- 还可以使用 <context:exclude-filter这个方式，过滤掉需要留给mvc配置去加载的包 -->
 	<context:component-scan base-package="com.vigorous.search.service" />
+	<context:component-scan base-package="com.vigorous.search.dao" />
 
 	<!-- 使用注解式声明事务支持需要 -->
 	<!-- <tx:annotation-driven transaction-manager="txManager"></tx:annotation-driven> -->

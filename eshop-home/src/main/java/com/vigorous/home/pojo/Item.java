@@ -1,4 +1,4 @@
-package com.vigorous.search.pojo;
+package com.vigorous.home.pojo;
 public class Item {
 
 	private String id;
@@ -49,5 +49,14 @@ public class Item {
 	}
 	public void setItem_des(String item_des) {
 		this.item_des = item_des;
+	}
+	
+	//add for jsp need 
+	public String[] getImages() {
+		if (image != null) {
+			String[] images = image.split(",");
+			return images;
+		}
+		return null;
 	}
 }
