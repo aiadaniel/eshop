@@ -18,4 +18,11 @@ public class DataGridResult {
 		this.rows = rows;
 	}
 	
+	public DataGridResult(long toa,List<?> datas) {
+		this.total = toa;
+		this.rows = datas;
+	}
+	
+	public DataGridResult() {
+	}
 }
