@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import com.vigorous.common.pojo.ResultModel;
+import com.vigorous.common.utils.CookieUtils;
 import com.vigorous.common.utils.JsonUtils;
 import com.vigorous.mapper.TbUserMapper;
 import com.vigorous.pojo.TbUser;
@@ -96,6 +97,10 @@ public class UserServiceImpl implements UserService {
 		jedisClient.set(REDIS_USER_SESSION_KEY + ":" + token, JsonUtils.objectToJson(user));
 		// 设置session的过期时间
 		jedisClient.expire(REDIS_USER_SESSION_KEY + ":" + token, SSO_SESSION_EXPIRE);
+		
+		// add cookie
+		CookieUtils.setCookie(request, res, "SSO_TOKEN", token);
+		
 		// 返回token
 		return ResultModel.ok(token);
 	}
