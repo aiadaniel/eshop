@@ -79,7 +79,7 @@ public class UserController {
 		}
 	}
 
-	@RequestMapping(value = "/login")
+	@PostMapping(value = "/login")
 	@ResponseBody
 	public ResultModel userLogin(String username, String password, HttpServletRequest request,
 			HttpServletResponse response) {
