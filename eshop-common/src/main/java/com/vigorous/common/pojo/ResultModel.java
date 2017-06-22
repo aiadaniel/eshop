@@ -47,6 +47,15 @@ public class ResultModel {
 	}
 
 	private static final ObjectMapper MAPPER = new ObjectMapper();
+	
+	public static ResultModel format(String json) {
+		try {
+			return MAPPER.readValue(json, ResultModel.class);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 	public static ResultModel formatToList(String jsonData, Class<?> clazz) {
 		try {

@@ -34,14 +34,17 @@
 		<!-- 连接耗尽时是否阻塞, false报异常,ture阻塞直到超时, 默认true -->
 		<property name="blockWhenExhausted" value="false" />
 	</bean>
-	<!-- jedis客户端单机版 -->
-	<!-- 	
+	
+	<!-- jedis客户端单机版 -->	
 	<bean id="redisClient" class="redis.clients.jedis.JedisPool">
 		<constructor-arg name="host" value="127.0.0.1"></constructor-arg>
 		<constructor-arg name="port" value="6379"></constructor-arg>
 		<constructor-arg name="poolConfig" ref="jedisPoolConfig"></constructor-arg>
 	</bean> 
-	-->
+	
+	<bean id="jedisClient" class="com.vigorous.rest.dao.impl.JedisClientSingle"></bean>
+
+	<!-- 
 	<bean id="redisClient" class="redis.clients.jedis.JedisCluster">
 		<constructor-arg name="nodes">
 			<set>
@@ -74,5 +77,5 @@
 		<constructor-arg name="poolConfig" ref="jedisPoolConfig"></constructor-arg>
 	</bean>
 	
-	<bean id="jedisClient" class="com.vigorous.rest.dao.impl.JedisClientCluster"></bean>
+	<bean id="jedisClient" class="com.vigorous.rest.dao.impl.JedisClientCluster"></bean> -->
 </beans>

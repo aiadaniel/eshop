@@ -1,6 +1,9 @@
 package com.vigorous.home.pojo;
 public class Item {
 
+	/**
+	 * 商品项
+	 */
 	private String id;
 	private String title;
 	private String sell_point;

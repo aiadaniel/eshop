@@ -41,6 +41,7 @@ public final class CookieUtils {
         String retValue = null;
         try {
             for (int i = 0; i < cookieList.length; i++) {
+            	System.out.println("==cookies " + cookieList[i].getName());
                 if (cookieList[i].getName().equals(cookieName)) {
                     if (isDecoder) {
                         retValue = URLDecoder.decode(cookieList[i].getValue(), "UTF-8");
@@ -148,8 +149,8 @@ public final class CookieUtils {
                 cookie.setMaxAge(cookieMaxage);
             if (null != request) {// 设置域名的cookie
             	String domainName = getDomainName(request);
-            	System.out.println(domainName);
-                if (!"localhost".equals(domainName)) {
+            	System.out.println("CookieUtils " + domainName);
+                if (!"localhost".equals(domainName) && !".0.0.1".equals(domainName)) {
                 	cookie.setDomain(domainName);
                 }
             }
@@ -201,16 +202,17 @@ public final class CookieUtils {
             domainName = "";
         } else {
             serverName = serverName.toLowerCase();
-            serverName = serverName.substring(7);
+            serverName = serverName.substring(7);// is http://
             final int end = serverName.indexOf("/");
             serverName = serverName.substring(0, end);
             final String[] domains = serverName.split("\\.");
             int len = domains.length;
             if (len > 3) {
-                // www.xxx.com.cn
+            	// TODO: 当前对127.0.0.1形式的，所以把domains[len-4]加回来了
+                // www.xxx.com.cn    domains[len - 4] + 
                 domainName = "." + domains[len - 3] + "." + domains[len - 2] + "." + domains[len - 1];
             } else if (len <= 3 && len > 1) {
-                // xxx.com or xxx.cn
+                // xxx.com or xxx.cn    domains[len - 3] + 
                 domainName = "." + domains[len - 2] + "." + domains[len - 1];
             } else {
                 domainName = serverName;

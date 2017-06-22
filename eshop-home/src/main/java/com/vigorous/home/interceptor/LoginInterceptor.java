@@ -23,6 +23,7 @@ public class LoginInterceptor implements HandlerInterceptor{
 		//判断用户是否登录
 		//从cookie中取token
 		String token = CookieUtils.getCookieValue(request, "SSO_TOKEN");
+		
 		//根据token换取用户信息，调用sso系统的接口。
 		TbUser user = userService.getUserByToken(token);
 		//取不到用户信息

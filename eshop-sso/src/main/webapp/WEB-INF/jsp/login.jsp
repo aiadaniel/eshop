@@ -77,7 +77,7 @@
 			doLogin:function() {
 				$.post("/user/login", $("#formlogin").serialize(),function(data){
 					if (data.status == 200) {
-						alert("登录成功！");
+						alert("登录成功！" + redirectUrl);
 						if (redirectUrl == "") {
 							location.href = "http://localhost:7080";
 						} else {

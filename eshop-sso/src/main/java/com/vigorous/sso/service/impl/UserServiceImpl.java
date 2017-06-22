@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.plaf.metal.MetalSliderUI;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +75,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public ResultModel userLogin(String username, String password, HttpServletRequest request,
-			HttpServletResponse res) {
+			HttpServletResponse response) {
 
 		TbUserExample example = new TbUserExample();
 		Criteria criteria = example.createCriteria();
@@ -98,8 +99,7 @@ public class UserServiceImpl implements UserService {
 		// 设置session的过期时间
 		jedisClient.expire(REDIS_USER_SESSION_KEY + ":" + token, SSO_SESSION_EXPIRE);
 		
-		// add cookie
-		CookieUtils.setCookie(request, res, "SSO_TOKEN", token);
+		CookieUtils.setCookie(request, response, "SSO_TOKEN", token);
 		
 		// 返回token
 		return ResultModel.ok(token);
@@ -116,6 +116,8 @@ public class UserServiceImpl implements UserService {
 		}
 		//更新过期时间
 		jedisClient.expire(REDIS_USER_SESSION_KEY + ":" + token, SSO_SESSION_EXPIRE);
+		System.out.println("==sso get: " + token + " cookie: " + json);
+		
 		//返回用户信息
 		return ResultModel.ok(JsonUtils.jsonToPojo(json, TbUser.class));
 	}
