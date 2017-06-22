@@ -25,6 +25,10 @@ public class ResultModel {
 	public Object getData() {
 		return data;
 	}
+	
+	public ResultModel() {
+		
+	}
 
 	public ResultModel(int code, String message) {
 		this.status = code;
