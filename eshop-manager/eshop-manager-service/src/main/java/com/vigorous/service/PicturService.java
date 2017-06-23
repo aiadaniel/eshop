@@ -1,9 +1,9 @@
 package com.vigorous.service;
 
-import java.util.Map;
-
 import org.springframework.web.multipart.MultipartFile;
 
+import com.vigorous.common.pojo.PictureResult;
+
 public interface PicturService {
-	Map uploadPic(MultipartFile file);
+	PictureResult uploadPic(MultipartFile file);
 }
