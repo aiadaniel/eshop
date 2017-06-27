@@ -59,7 +59,7 @@ public class PictureServiceImpl implements PicturService {
 			e.printStackTrace();
 			return PictureResult.error(ExceptionUtil.getStackTrace(e));
 		}
-		return PictureResult.ok(IMAGE_BASE_URL + imagePath + "/" + newName + ext);
+		return PictureResult.ok(IMAGE_BASE_URL + imagePath + "/" + newName /*+ ext*/);
 	}
 
 }

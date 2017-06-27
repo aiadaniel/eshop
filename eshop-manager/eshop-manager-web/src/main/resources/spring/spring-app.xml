@@ -49,37 +49,57 @@
 			<!--<tx:method name="*"/> -->
 		</tx:attributes>
 	</tx:advice>
+	
+	<!-- 定义aop切面处理器 -->
+	<bean id="dataSourceAspect" class="com.vigorous.datasource.DataSourceAspect"></bean>
 
 	<!-- <aop:aspectj-autoproxy proxy-target-class="true" /> -->
 	<aop:config>
 		<!-- 定义切面，这是aspectJ的切点表达式语言 -->
-		<aop:pointcut id="bussinessService" expression="execution(* com.vigorous.service.*.*(..))" />
-		<!-- 通知（何时）：引用切点，引用通知 -->
+		<aop:pointcut id="bussinessService"
+			expression="execution(* com.vigorous.service.*.*(..))" />
+		<!-- 通知（何时）：将定义好的事务处理策略应用到上述的切入点 -->
 		<aop:advisor pointcut-ref="bussinessService" advice-ref="txAdvice" />
+		
+		<!-- 将切面应用到自定义的切面处理器上，-9999保证该切面优先级最高执行 -->
+		<aop:aspect ref="dataSourceAspect" order="-9999">
+			<aop:before method="before" pointcut-ref="bussinessService" />
+		</aop:aspect>
 	</aop:config>
-
-	<!-- 当前引入这种方式导致placeholder占位符失效，需要查下为啥 -->
-	<!-- <import resource="redis-context.xml" /> -->
-
-	<!-- 要使用spring cache注解必须加这个在主配置文件 -->
-<!-- 	<cache:annotation-driven />
-
-	<bean id="cacheManager" class="org.springframework.data.redis.cache.RedisCacheManager"
-		c:redis-operations-ref="redisTemplate">
-		<property name="defaultExpiration" value="600"></property>
-	</bean> -->
 
 
 	<!-- 开发环境 -->
 	<beans profile="dev">
 		<context:property-placeholder location="classpath:property/*-dev.properties" />
 
-		<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		<bean id="dataSource" class="com.vigorous.datasource.DynamicDataSource">
+			<!-- 设置多个数据源 -->
+			<property name="targetDataSources">
+				<map key-type="java.lang.String">
+					<!-- 这个key需要和程序中的key一致 -->
+					<entry key="master" value-ref="dataSourceW" />
+					<entry key="slave" value-ref="dataSourceR" />
+				</map>
+			</property>
+			<!-- 设置默认的数据源，这里默认走写库 -->
+			<property name="defaultTargetDataSource" ref="dataSourceW" />
+		</bean>
+		<!-- 实现读写分离 -->
+		<bean id="dataSourceW" class="com.alibaba.druid.pool.DruidDataSource"
 			destroy-method="close">
-			<property name="driverClassName" value="${jdbc.driver}" />
-			<property name="url" value="${jdbc.url}" />
-			<property name="username" value="${jdbc.username}" />
-			<property name="password" value="${jdbc.password}" />
+			<property name="driverClassName" value="${jdbc.master.driver}" />
+			<property name="url" value="${jdbc.master.url}" />
+			<property name="username" value="${jdbc.master.username}" />
+			<property name="password" value="${jdbc.master.password}" />
+			<property name="maxActive" value="10" />
+			<property name="minIdle" value="5" />
+		</bean>
+		<bean id="dataSourceR" class="com.alibaba.druid.pool.DruidDataSource"
+			destroy-method="close">
+			<property name="driverClassName" value="${jdbc.slave.driver}" />
+			<property name="url" value="${jdbc.slave.url}" />
+			<property name="username" value="${jdbc.slave.username}" />
+			<property name="password" value="${jdbc.slave.password}" />
 			<property name="maxActive" value="10" />
 			<property name="minIdle" value="5" />
 		</bean>
