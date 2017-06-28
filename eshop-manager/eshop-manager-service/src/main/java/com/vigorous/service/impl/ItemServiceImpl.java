@@ -1,11 +1,15 @@
 package com.vigorous.service.impl;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.vigorous.common.pojo.DataGridResult;
@@ -32,6 +36,11 @@ public class ItemServiceImpl implements ItemService {
 	
 	@Autowired
 	private TbItemParamItemMapper itemParamItemMapper;
+	
+	@Autowired
+	private RabbitTemplate rabbitTemplate;
+	
+	private static final ObjectMapper MAPPER = new ObjectMapper();
 
 	@Override
 	public TbItem geItemById(long itemId) {
@@ -84,6 +93,10 @@ public class ItemServiceImpl implements ItemService {
 		if (result.getStatus() != 200) {
 			throw new Exception();
 		}
+		
+		//通过mq通知其他服务更新数据
+		sendMsgToMQ(itemId, "insert");
+		
 		return ResultModel.ok();
 	}
 	/**
@@ -122,6 +135,18 @@ public class ItemServiceImpl implements ItemService {
 		
 		return ResultModel.ok();
 		
+	}
+	
+	private void sendMsgToMQ(long itemId,String type) {
+		try {
+			Map<String, Object> map = new HashMap<>();
+			map.put("itemId", itemId);
+			map.put("type", type);
+			map.put("data", System.currentTimeMillis());
+			rabbitTemplate.convertAndSend("item."+type,MAPPER.writeValueAsString(map));
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
 	}
 
 }

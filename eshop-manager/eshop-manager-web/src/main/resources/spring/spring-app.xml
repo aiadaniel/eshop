@@ -3,7 +3,10 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
 	xmlns:cache="http://www.springframework.org/schema/cache" xmlns:c="http://www.springframework.org/schema/c"
 	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	xsi:schemaLocation="http://www.springframework.org/schema/rabbit
+		http://www.springframework.org/schema/rabbit/spring-rabbit-1.4.xsd
+		http://www.springframework.org/schema/beans 
         http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/tx
         http://www.springframework.org/schema/tx/spring-tx.xsd
@@ -13,6 +16,27 @@
         http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
         http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd">
 
+	<!-- 定义RabbitMQ的连接工厂 -->
+	<rabbit:connection-factory id="connectionFactory"
+		host="${rabbit.host}" port="${rabbit.port}" username="${rabbit.username}"
+		password="${rabbit.passwd}" virtual-host="${rabbit.vhost}" />
+
+	<!-- MQ管理 -->
+	<rabbit:admin connection-factory="connectionFactory"/>
+	
+	<!-- 定义queue (TODO: 代码创建更灵活) -->
+	<rabbit:queue name="item_queue" durable="true" auto-declare="true" auto-delete="false" exclusive="false"/>
+
+	<!-- 定义交换机，开启持久化 -->
+	<rabbit:topic-exchange name="eshop-item-exchange" auto-declare="true" durable="true">
+		<rabbit:bindings>
+			<rabbit:binding pattern="item.#" queue="item_queue"></rabbit:binding>
+		</rabbit:bindings>
+	</rabbit:topic-exchange>
+	
+	<!-- 定义模板 -->
+	<rabbit:template id="rabbitTemplate" connection-factory="connectionFactory" exchange="eshop-item-exchange"/>
+	
 	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
 		<!--配置mybatis全局配置文件:mybatis-config.xml -->
 		<property name="configLocation" value="classpath:mybatis/mybatis-config.xml" />
@@ -49,7 +73,7 @@
 			<!--<tx:method name="*"/> -->
 		</tx:attributes>
 	</tx:advice>
-	
+
 	<!-- 定义aop切面处理器 -->
 	<bean id="dataSourceAspect" class="com.vigorous.datasource.DataSourceAspect"></bean>
 
@@ -60,7 +84,7 @@
 			expression="execution(* com.vigorous.service.*.*(..))" />
 		<!-- 通知（何时）：将定义好的事务处理策略应用到上述的切入点 -->
 		<aop:advisor pointcut-ref="bussinessService" advice-ref="txAdvice" />
-		
+
 		<!-- 将切面应用到自定义的切面处理器上，-9999保证该切面优先级最高执行 -->
 		<aop:aspect ref="dataSourceAspect" order="-9999">
 			<aop:before method="before" pointcut-ref="bussinessService" />
