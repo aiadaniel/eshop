@@ -2,6 +2,8 @@ package com.vigorous.mapper;
 
 import com.vigorous.pojo.TbOrder;
 import com.vigorous.pojo.TbOrderExample;
+
+import java.util.Date;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
@@ -27,4 +29,6 @@ public interface TbOrderMapper {
     int updateByPrimaryKeySelective(TbOrder record);
 
     int updateByPrimaryKey(TbOrder record);
+    
+    void paymentOrderScan(@Param("date")Date date);
 }

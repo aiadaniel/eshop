@@ -68,6 +68,8 @@
 		c:redis-operations-ref="redisTemplate">
 		<property name="defaultExpiration" value="600"></property>
 	</bean> -->
+	
+	<import resource="spring-scheduler.xml"/>
 
 
 	<!-- 开发环境 -->

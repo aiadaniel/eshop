@@ -30,7 +30,7 @@
 	<!-- 定义消费者对象 -->
 	<bean id="itemHandler" class="com.vigorous.home.mq.handler.ItemHandler" />
 
-	<!-- 监听队列 -->
+	<!-- 监听队列  NOTE:还可以直接实现org.springframework.amqp.core.MessageListener接口来处理消息 -->
 	<rabbit:listener-container connection-factory="connectionFactory">
 		<rabbit:listener ref="itemHandler" method="execute" queue-names="item_queue" />
 	</rabbit:listener-container>
